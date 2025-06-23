@@ -11,14 +11,8 @@ A Model Context Protocol (MCP) server that integrates with Google AI Studio / Ge
 
 ### Using npx (Recommended)
 
-**From npm registry:**
 ```bash
 GEMINI_API_KEY=your_api_key npx -y aistudio-mcp-server@latest
-```
-
-**From GitHub (latest):**
-```bash
-GEMINI_API_KEY=your_api_key npx -y github:eternnoir/aistudio-mcp-server@latest
 ```
 
 ### Local Installation
@@ -145,33 +139,12 @@ Generates content using Gemini with optional multi-file input support. Supports 
 
 Add this server to your MCP client configuration:
 
-**Using npm package:**
 ```json
 {
   "mcpServers": {
     "aistudio": {
       "command": "npx",
       "args": ["-y", "aistudio-mcp-server@latest"],
-      "env": {
-        "GEMINI_API_KEY": "your_api_key_here",
-        "GEMINI_MODEL": "gemini-2.5-flash",
-        "GEMINI_TIMEOUT": "600000",
-        "GEMINI_MAX_OUTPUT_TOKENS": "16384",
-        "GEMINI_MAX_FILES": "10",
-        "GEMINI_MAX_TOTAL_FILE_SIZE": "52428800"
-      }
-    }
-  }
-}
-```
-
-**Using GitHub (latest development version):**
-```json
-{
-  "mcpServers": {
-    "aistudio": {
-      "command": "npx",
-      "args": ["-y", "github:eternnoir/aistudio-mcp-server@latest"],
       "env": {
         "GEMINI_API_KEY": "your_api_key_here",
         "GEMINI_MODEL": "gemini-2.5-flash",
