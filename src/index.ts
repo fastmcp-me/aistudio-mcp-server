@@ -23,7 +23,7 @@ class AIStudioMCPServer {
     this.maxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '8192'); // Default 8192
     this.defaultModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash'; // Default gemini-2.5-flash
     this.maxFiles = parseInt(process.env.GEMINI_MAX_FILES || '10'); // Default maximum 10 files
-    this.maxTotalFileSize = parseInt(process.env.GEMINI_MAX_TOTAL_FILE_SIZE || '52428800'); // Default 50MB
+    this.maxTotalFileSize = parseInt(process.env.GEMINI_MAX_TOTAL_FILE_SIZE || '50') * 1024 * 1024; // Default 50MB
 
     this.server = new Server(
       {

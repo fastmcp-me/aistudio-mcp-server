@@ -36,7 +36,7 @@ export GEMINI_API_KEY=your_api_key_here
 - `GEMINI_TIMEOUT`: Request timeout in milliseconds (default: 300000 = 5 minutes)
 - `GEMINI_MAX_OUTPUT_TOKENS`: Maximum output tokens (default: 8192)
 - `GEMINI_MAX_FILES`: Maximum number of files per request (default: 10)
-- `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in bytes (default: 52428800 = 50MB)
+- `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in MB (default: 50)
 
 Example:
 ```bash
@@ -45,7 +45,7 @@ export GEMINI_MODEL=gemini-2.5-flash
 export GEMINI_TIMEOUT=600000  # 10 minutes
 export GEMINI_MAX_OUTPUT_TOKENS=16384  # More output tokens
 export GEMINI_MAX_FILES=5  # Limit to 5 files per request
-export GEMINI_MAX_TOTAL_FILE_SIZE=104857600  # 100MB limit
+export GEMINI_MAX_TOTAL_FILE_SIZE=100  # 100MB limit
 ```
 
 ## Available Tools
@@ -215,7 +215,7 @@ Add this server to your MCP client configuration:
         "GEMINI_TIMEOUT": "600000",
         "GEMINI_MAX_OUTPUT_TOKENS": "16384",
         "GEMINI_MAX_FILES": "10",
-        "GEMINI_MAX_TOTAL_FILE_SIZE": "52428800"
+        "GEMINI_MAX_TOTAL_FILE_SIZE": "50"
       }
     }
   }

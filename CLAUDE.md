@@ -45,7 +45,7 @@ Optional:
 - `GEMINI_TIMEOUT`: Request timeout in milliseconds (default: 300000 / 5 minutes)
 - `GEMINI_MAX_OUTPUT_TOKENS`: Maximum tokens for output (default: 8192)
 - `GEMINI_MAX_FILES`: Maximum number of files per request (default: 10)
-- `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in bytes (default: 52428800 / 50MB)
+- `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in MB (default: 50)
 
 ## Key Implementation Details
 
@@ -94,7 +94,7 @@ The `generate_content` tool uses a `files` array parameter for processing files:
 - `type` field is optional - auto-detected from file extension for `path`, can be specified manually for `content`
 - Supports common formats: PDF, images (JPG, PNG, GIF, WebP, SVG), text files, Office documents
 - Maximum 10 files per request (configurable via `GEMINI_MAX_FILES`)
-- Maximum 50MB total file size (configurable via `GEMINI_MAX_TOTAL_FILE_SIZE`)
+- Maximum 50MB total file size (configurable via `GEMINI_MAX_TOTAL_FILE_SIZE` in MB)
 - Comprehensive error reporting for individual file failures
 
 ## Testing the Server
