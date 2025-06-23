@@ -31,7 +31,7 @@ npm publish
 
 The server is implemented as a single TypeScript module (`src/index.ts`) that:
 1. Creates an MCP server instance using stdio transport
-2. Exposes two tools: `convert_pdf_to_markdown` and `generate_content`
+2. Exposes one tool: `generate_content` (handles both general content generation and PDF-to-Markdown conversion)
 3. Uses Google's Generative AI SDK to process requests
 4. Handles file uploads and content generation through Gemini API
 
@@ -52,12 +52,12 @@ Optional:
 - The server uses CommonJS module system (compiled output)
 - TypeScript strict mode is enabled - ensure all types are properly defined
 - File uploads are handled by reading files as base64 and sending to Gemini with appropriate MIME types
-- Both tools (`convert_pdf_to_markdown` and `generate_content`) accept an optional `model` parameter to override the default model
+- The `generate_content` tool accepts an optional `model` parameter to override the default model
 - The main executable is at `bin/aistudio-mcp-server` which requires the compiled `dist/index.js`
 
 ## File Processing
 
-Both tools use a `files` array parameter for processing files:
+The `generate_content` tool uses a `files` array parameter for processing files:
 
 ### Usage Examples
 
@@ -69,14 +69,14 @@ Both tools use a `files` array parameter for processing files:
       "path": "/path/to/document.pdf"
     }
   ],
-  "prompt": "Convert to Markdown with table of contents"
+  "user_prompt": "Convert to Markdown with table of contents"
 }
 ```
 
 **Generate Content with Multiple Files:**
 ```javascript
 {
-  "prompt": "Analyze these images and documents",
+  "user_prompt": "Analyze these images and documents",
   "files": [
     {
       "path": "/path/to/image.jpg"

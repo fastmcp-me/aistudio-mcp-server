@@ -69,62 +69,18 @@ class AIStudioMCPServer {
       return {
         tools: [
           {
-            name: 'convert_pdf_to_markdown',
-            description: 'Convert PDF files to Markdown using Gemini Vision. Supports single or multiple PDF files. MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "files": [\n    {\n      "path": "/path/to/document.pdf"\n    }\n  ],\n  "prompt": "Convert to Markdown format"\n}\n```\n\nFor multiple files:\n```json\n{\n  "files": [\n    {"path": "/doc1.pdf"},\n    {"content": "base64content", "type": "application/pdf"}\n  ]\n}\n```',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                files: {
-                  type: 'array',
-                  description: 'Array of PDF files to convert. Each file needs either path or content.',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      path: {
-                        type: 'string',
-                        description: 'Path to PDF file',
-                      },
-                      content: {
-                        type: 'string',
-                        description: 'Base64 encoded PDF file content (alternative to path)',
-                      },
-                      type: {
-                        type: 'string',
-                        description: 'MIME type of the file (optional, auto-detected from file extension)',
-                      },
-                    },
-                    required: [],
-                    oneOf: [
-                      { required: ['path'] },
-                      { required: ['content'] },
-                    ],
-                  },
-                  minItems: 1,
-                  maxItems: this.maxFiles,
-                },
-                prompt: {
-                  type: 'string',
-                  description: 'Additional instructions for conversion (optional)',
-                  default: 'Convert this PDF to well-formatted Markdown, preserving structure and formatting. Return only the Markdown content without any additional text.',
-                },
-                model: {
-                  type: 'string',
-                  description: 'Gemini model to use (optional)',
-                  default: this.defaultModel,
-                },
-              },
-              required: ['files'],
-            },
-          },
-          {
             name: 'generate_content',
-            description: 'Generate content using Gemini with optional file inputs. Supports multiple files: images (JPG, PNG, GIF, WebP, SVG, BMP, TIFF), video (MP4, AVI, MOV, WebM, FLV, MPG, WMV), audio (MP3, WAV, AIFF, AAC, OGG, FLAC), documents (PDF), and text files (TXT, MD, JSON, XML, CSV, HTML). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "prompt": "Analyze this video",\n  "files": [\n    {\n      "path": "/path/to/video.mp4"\n    }\n  ]\n}\n```\n\nMultiple files example:\n```json\n{\n  "prompt": "Analyze these multimedia files",\n  "files": [\n    {"path": "/document.pdf"},\n    {"path": "/image.png"},\n    {"path": "/audio.mp3"}\n  ]\n}\n```',
+            description: 'Generate content using Gemini with optional file inputs. Supports multiple files: images (JPG, PNG, GIF, WebP, SVG, BMP, TIFF), video (MP4, AVI, MOV, WebM, FLV, MPG, WMV), audio (MP3, WAV, AIFF, AAC, OGG, FLAC), documents (PDF), and text files (TXT, MD, JSON, XML, CSV, HTML). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "user_prompt": "Analyze this video",\n  "files": [\n    {\n      "path": "/path/to/video.mp4"\n    }\n  ]\n}\n```\n\nPDF to Markdown conversion:\n```json\n{\n  "user_prompt": "Convert this PDF to well-formatted Markdown, preserving structure and formatting",\n  "files": [\n    {"path": "/document.pdf"}\n  ]\n}\n```\n\nWith system prompt:\n```json\n{\n  "system_prompt": "You are a helpful assistant specialized in document analysis",\n  "user_prompt": "Please provide a detailed summary",\n  "files": [{"path": "/document.pdf"}]\n}\n```',
             inputSchema: {
               type: 'object',
               properties: {
-                prompt: {
+                user_prompt: {
                   type: 'string',
-                  description: 'Text prompt for generation',
+                  description: 'User prompt for generation',
+                },
+                system_prompt: {
+                  type: 'string',
+                  description: 'System prompt to guide the AI behavior (optional)',
                 },
                 files: {
                   type: 'array',
@@ -159,7 +115,7 @@ class AIStudioMCPServer {
                   default: this.defaultModel,
                 },
               },
-              required: ['prompt'],
+              required: ['user_prompt'],
             },
           },
         ],
@@ -171,8 +127,6 @@ class AIStudioMCPServer {
 
       try {
         switch (name) {
-          case 'convert_pdf_to_markdown':
-            return await this.convertPdfToMarkdown(args);
           case 'generate_content':
             return await this.generateContent(args);
           default:
@@ -325,64 +279,6 @@ class AIStudioMCPServer {
     return results;
   }
 
-  private async convertPdfToMarkdown(args: any) {
-    if (!this.genAI) {
-      throw new Error('GenAI not initialized');
-    }
-
-    const prompt = args.prompt || 'Convert this PDF to well-formatted Markdown, preserving structure and formatting. Return only the Markdown content without any additional text.';
-    const model = args.model || this.defaultModel;
-    const contents: any[] = [prompt];
-
-    const processedFiles = await this.processFiles(args.files);
-    
-    if (processedFiles.errors.length > 0) {
-      const errorMessages = processedFiles.errors.map(err => 
-        err.name ? `${err.name}: ${err.error}` : err.error
-      ).join('\n');
-      throw new Error(`File processing errors:\n${errorMessages}`);
-    }
-    
-    if (processedFiles.success.length === 0) {
-      throw new Error('No files were successfully processed');
-    }
-    
-    // Add each file to contents
-    processedFiles.success.forEach((file, index) => {
-      contents.push({
-        inlineData: {
-          mimeType: file.type,
-          data: file.content,
-        },
-      });
-    });
-    
-    // Update prompt for multi-file processing
-    if (processedFiles.success.length > 1) {
-      contents[0] = `${prompt}\n\nProcessing ${processedFiles.success.length} files. Please provide the converted Markdown for each file with clear section headers indicating the source file name.`;
-    }
-
-    try {
-      const response = await this.genAI.models.generateContent({
-        model,
-        contents,
-        config: {
-          maxOutputTokens: this.maxOutputTokens,
-        },
-      });
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: response.text || 'No content generated',
-          },
-        ],
-      };
-    } catch (error) {
-      throw new Error(`Gemini API error: ${error}`);
-    }
-  }
 
   private async generateContent(args: any) {
     if (!this.genAI) {
@@ -390,9 +286,14 @@ class AIStudioMCPServer {
     }
 
     const model = args.model || this.defaultModel;
-    const contents: any[] = [args.prompt];
+    
+    // Build contents array for conversation
+    const contents: any[] = [];
+    
+    // Build the current user message parts
+    const currentMessageParts: any[] = [{ text: args.user_prompt }];
 
-    // Process files if provided
+    // Process files if provided and add to current message
     if (args.files && args.files.length > 0) {
       const processedFiles = await this.processFiles(args.files);
       
@@ -403,9 +304,9 @@ class AIStudioMCPServer {
         throw new Error(`File processing errors:\n${errorMessages}`);
       }
       
-      // Add successfully processed files to contents
+      // Add successfully processed files to current message parts
       processedFiles.success.forEach((file) => {
-        contents.push({
+        currentMessageParts.push({
           inlineData: {
             mimeType: file.type,
             data: file.content,
@@ -413,15 +314,31 @@ class AIStudioMCPServer {
         });
       });
     }
+    
+    // Add the current user message
+    contents.push({
+      role: 'user',
+      parts: currentMessageParts
+    });
+
+    // Prepare request configuration
+    const requestConfig: any = {
+      model,
+      contents,
+      config: {
+        maxOutputTokens: this.maxOutputTokens,
+      },
+    };
+    
+    // Add system instruction if provided
+    if (args.system_prompt) {
+      requestConfig.systemInstruction = {
+        parts: [{ text: args.system_prompt }]
+      };
+    }
 
     try {
-      const response = await this.genAI.models.generateContent({
-        model,
-        contents,
-        config: {
-          maxOutputTokens: this.maxOutputTokens,
-        },
-      });
+      const response = await this.genAI.models.generateContent(requestConfig);
 
       return {
         content: [

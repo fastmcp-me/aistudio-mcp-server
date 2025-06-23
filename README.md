@@ -1,6 +1,6 @@
 # AI Studio MCP Server
 
-A Model Context Protocol (MCP) server that integrates with Google AI Studio / Gemini API, providing tools for PDF to Markdown conversion and general content generation.
+A Model Context Protocol (MCP) server that integrates with Google AI Studio / Gemini API, providing content generation capabilities with support for files, conversation history, and system prompts.
 
 ## Installation and Usage
 
@@ -50,47 +50,13 @@ export GEMINI_MAX_TOTAL_FILE_SIZE=104857600  # 100MB limit
 
 ## Available Tools
 
-### convert_pdf_to_markdown
-
-Converts PDF files to well-formatted Markdown using Gemini's vision capabilities. Supports single or multiple PDF files with automatic error handling and file size validation.
-
-**Parameters:**
-- `files` (array, required): Array of PDF files to convert
-  - Each file object must have either `path` or `content`
-  - `path` (string): Path to PDF file
-  - `content` (string): Base64 encoded PDF file content  
-  - `type` (string, optional): MIME type (auto-detected from file extension)
-- `prompt` (string, optional): Additional instructions for conversion
-- `model` (string, optional): Gemini model to use (default: gemini-2.5-flash)
-
-**Example:**
-```json
-{
-  "files": [
-    {
-      "path": "/path/to/document.pdf"
-    }
-  ],
-  "prompt": "Convert to Markdown with table of contents"
-}
-```
-
-**Multiple files example:**
-```json
-{
-  "files": [
-    {"path": "/doc1.pdf"},
-    {"content": "base64encodedpdfcontent", "type": "application/pdf"}
-  ]
-}
-```
-
 ### generate_content
 
-Generates content using Gemini with optional multi-file input support. Supports various file types including images, PDFs, Office documents, and text files.
+Generates content using Gemini with comprehensive support for files, conversation history, and system prompts. Supports various file types including images, PDFs, Office documents, and text files.
 
 **Parameters:**
-- `prompt` (string, required): Text prompt for generation
+- `user_prompt` (string, required): User prompt for generation
+- `system_prompt` (string, optional): System prompt to guide AI behavior
 - `files` (array, optional): Array of files to include in generation
   - Each file object must have either `path` or `content`
   - `path` (string): Path to file
@@ -111,10 +77,10 @@ Generates content using Gemini with optional multi-file input support. Supports 
 - Video files: Up to 10 per request
 - PDF files follow image pricing (one page = one image)
 
-**Example:**
+**Basic example:**
 ```json
 {
-  "prompt": "Analyze this image and describe what you see",
+  "user_prompt": "Analyze this image and describe what you see",
   "files": [
     {
       "path": "/path/to/image.jpg"
@@ -123,14 +89,112 @@ Generates content using Gemini with optional multi-file input support. Supports 
 }
 ```
 
+**PDF to Markdown conversion:**
+```json
+{
+  "user_prompt": "Convert this PDF to well-formatted Markdown, preserving structure and formatting. Return only the Markdown content.",
+  "files": [
+    {
+      "path": "/path/to/document.pdf"
+    }
+  ]
+}
+```
+
+**With system prompt:**
+```json
+{
+  "system_prompt": "You are a helpful document analyst specialized in technical documentation",
+  "user_prompt": "Please provide a detailed explanation of the authentication methods shown in this document",
+  "files": [
+    {"path": "/api-docs.pdf"}
+  ]
+}
+```
+
 **Multiple files example:**
 ```json
 {
-  "prompt": "Compare these documents and images",
+  "user_prompt": "Compare these documents and images",
   "files": [
     {"path": "/document.pdf"},
     {"path": "/chart.png"},
     {"content": "base64encodedcontent", "type": "image/jpeg"}
+  ]
+}
+```
+
+## Common Use Cases
+
+### PDF to Markdown Conversion
+
+To convert PDF files to Markdown format, use the `generate_content` tool with an appropriate prompt:
+
+```json
+{
+  "user_prompt": "Convert this PDF to well-formatted Markdown, preserving structure, headings, lists, and formatting. Include table of contents if the document has sections.",
+  "files": [
+    {
+      "path": "/path/to/document.pdf"
+    }
+  ]
+}
+```
+
+### Image Analysis
+
+Analyze images, charts, diagrams, or photos with detailed descriptions:
+
+```json
+{
+  "system_prompt": "You are an expert image analyst. Provide detailed, accurate descriptions of visual content.",
+  "user_prompt": "Analyze this image and describe what you see. Include details about objects, people, text, colors, and composition.",
+  "files": [
+    {
+      "path": "/path/to/image.jpg"
+    }
+  ]
+}
+```
+
+For screenshots or technical diagrams:
+
+```json
+{
+  "user_prompt": "Describe this system architecture diagram. Explain the components and their relationships.",
+  "files": [
+    {
+      "path": "/architecture-diagram.png"
+    }
+  ]
+}
+```
+
+### Audio Transcription
+
+Generate transcripts from audio files:
+
+```json
+{
+  "system_prompt": "You are a professional transcription service. Provide accurate, well-formatted transcripts.",
+  "user_prompt": "Please transcribe this audio file. Include speaker identification if multiple speakers are present, and format it with proper punctuation and paragraphs.",
+  "files": [
+    {
+      "path": "/meeting-recording.mp3"
+    }
+  ]
+}
+```
+
+For interview or meeting transcripts:
+
+```json
+{
+  "user_prompt": "Transcribe this interview and provide a summary of key points discussed.",
+  "files": [
+    {
+      "path": "/interview.wav"
+    }
   ]
 }
 ```

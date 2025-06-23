@@ -1,7 +1,7 @@
 {
   "name": "aistudio-mcp-server",
-  "version": "0.2.1",
-  "description": "MCP Server for Google AI Studio / Gemini API integration",
+  "version": "0.3.0",
+  "description": "MCP Server for Google AI Studio / Gemini API integration with file processing support",
   "main": "dist/index.js",
   "bin": {
     "aistudio-mcp-server": "./bin/aistudio-mcp-server"
@@ -10,6 +10,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "inspector": "npm run build && npx --yes @modelcontextprotocol/inspector@latest node dist/index.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -19,7 +20,9 @@
     "ai-studio",
     "google",
     "generative-ai",
-    "pdf-to-markdown"
+    "pdf-markdown",
+    "image-analysis",
+    "audio-transcription"
   ],
   "author": "eternnoir",
   "repository": {
