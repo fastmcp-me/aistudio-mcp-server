@@ -421,11 +421,10 @@ async function main() {
   await server.start();
 }
 
-if (require.main === module) {
-  main().catch((error) => {
-    console.error('Server error:', error);
-    process.exit(1);
-  });
-}
+// Always run main when this file is loaded
+main().catch((error) => {
+  console.error('Server error:', error);
+  process.exit(1);
+});
 
 export { AIStudioMCPServer };
