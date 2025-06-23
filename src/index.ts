@@ -118,7 +118,7 @@ class AIStudioMCPServer {
           },
           {
             name: 'generate_content',
-            description: 'Generate content using Gemini with optional file inputs. Supports multiple files of various types (images, PDFs, documents). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "prompt": "Analyze this image",\n  "files": [\n    {\n      "path": "/path/to/image.jpg"\n    }\n  ]\n}\n```\n\nMultiple files example:\n```json\n{\n  "prompt": "Compare these documents",\n  "files": [\n    {"path": "/doc.pdf"},\n    {"path": "/image.png"}\n  ]\n}\n```',
+            description: 'Generate content using Gemini with optional file inputs. Supports multiple files: images (JPG, PNG, GIF, WebP, SVG, BMP, TIFF), video (MP4, AVI, MOV, WebM, FLV, MPG, WMV), audio (MP3, WAV, AIFF, AAC, OGG, FLAC), documents (PDF), and text files (TXT, MD, JSON, XML, CSV, HTML). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "prompt": "Analyze this video",\n  "files": [\n    {\n      "path": "/path/to/video.mp4"\n    }\n  ]\n}\n```\n\nMultiple files example:\n```json\n{\n  "prompt": "Analyze these multimedia files",\n  "files": [\n    {"path": "/document.pdf"},\n    {"path": "/image.png"},\n    {"path": "/audio.mp3"}\n  ]\n}\n```',
             inputSchema: {
               type: 'object',
               properties: {
@@ -128,7 +128,7 @@ class AIStudioMCPServer {
                 },
                 files: {
                   type: 'array',
-                  description: 'Array of files to include in generation (optional). Supports images, PDFs, documents, etc.',
+                  description: 'Array of files to include in generation (optional). Supports images, video, audio, PDFs, and text files.',
                   items: {
                     type: 'object',
                     properties: {
@@ -197,21 +197,49 @@ class AIStudioMCPServer {
     const ext = path.extname(filePath).toLowerCase();
     
     const mimeTypes: { [key: string]: string } = {
+      // Documents
       '.pdf': 'application/pdf',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      
+      // Images
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
       '.png': 'image/png',
       '.gif': 'image/gif',
       '.webp': 'image/webp',
       '.svg': 'image/svg+xml',
+      '.bmp': 'image/bmp',
+      '.tiff': 'image/tiff',
+      '.tif': 'image/tiff',
+      
+      // Video
+      '.mp4': 'video/mp4',
+      '.avi': 'video/x-msvideo',
+      '.mov': 'video/quicktime',
+      '.webm': 'video/webm',
+      '.flv': 'video/x-flv',
+      '.mpg': 'video/mpeg',
+      '.mpeg': 'video/mpeg',
+      '.wmv': 'video/x-ms-wmv',
+      
+      // Audio
+      '.mp3': 'audio/mpeg',
+      '.wav': 'audio/wav',
+      '.aiff': 'audio/aiff',
+      '.aac': 'audio/aac',
+      '.ogg': 'audio/ogg',
+      '.flac': 'audio/flac',
+      
+      // Text
       '.txt': 'text/plain',
       '.md': 'text/markdown',
       '.json': 'application/json',
       '.xml': 'application/xml',
       '.csv': 'text/csv',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.html': 'text/html',
+      '.htm': 'text/html',
     };
     
     return mimeTypes[ext] || 'application/octet-stream';

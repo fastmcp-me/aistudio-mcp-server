@@ -98,10 +98,18 @@ Generates content using Gemini with optional multi-file input support. Supports 
   - `type` (string, optional): MIME type (auto-detected from file extension)
 - `model` (string, optional): Gemini model to use (default: gemini-2.5-flash)
 
-**Supported file types:**
-- Images: JPG, JPEG, PNG, GIF, WebP, SVG
-- Documents: PDF, DOCX, XLSX, PPTX
-- Text: TXT, MD, JSON, XML, CSV
+**Supported file types (Gemini 2.5 models):**
+- **Images**: JPG, JPEG, PNG, GIF, WebP, SVG, BMP, TIFF
+- **Video**: MP4, AVI, MOV, WEBM, FLV, MPG, WMV (up to 10 files per request)
+- **Audio**: MP3, WAV, AIFF, AAC, OGG, FLAC (up to 15MB per file)
+- **Documents**: PDF (treated as images, one page = one image)
+- **Text**: TXT, MD, JSON, XML, CSV, HTML
+
+**File limitations:**
+- Maximum file size: 15MB per audio/video/document file
+- Maximum total request size: 20MB (2GB when using Cloud Storage)
+- Video files: Up to 10 per request
+- PDF files follow image pricing (one page = one image)
 
 **Example:**
 ```json
