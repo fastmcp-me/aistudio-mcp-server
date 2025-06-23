@@ -12,7 +12,7 @@ A Model Context Protocol (MCP) server that integrates with Google AI Studio / Ge
 ### Using npx (Recommended)
 
 ```bash
-GEMINI_API_KEY=your_api_key npx -y aistudio-mcp-server@latest
+GEMINI_API_KEY=your_api_key npx -y aistudio-mcp-server
 ```
 
 ### Local Installation
@@ -144,7 +144,7 @@ Add this server to your MCP client configuration:
   "mcpServers": {
     "aistudio": {
       "command": "npx",
-      "args": ["-y", "aistudio-mcp-server@latest"],
+      "args": ["-y", "aistudio-mcp-server"],
       "env": {
         "GEMINI_API_KEY": "your_api_key_here",
         "GEMINI_MODEL": "gemini-2.5-flash",
