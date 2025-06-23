@@ -1,0 +1,50 @@
+{
+  "name": "aistudio-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Google AI Studio / Gemini API integration",
+  "main": "dist/index.js",
+  "bin": {
+    "aistudio-mcp-server": "./bin/aistudio-mcp-server"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "gemini",
+    "ai-studio",
+    "google",
+    "generative-ai",
+    "pdf-to-markdown"
+  ],
+  "author": "eternnoir",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eternnoir/aistudio-mcp-server.git"
+  },
+  "homepage": "https://github.com/eternnoir/aistudio-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/eternnoir/aistudio-mcp-server/issues"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ]
+}
