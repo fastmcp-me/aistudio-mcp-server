@@ -16,6 +16,7 @@ class AIStudioMCPServer {
   private defaultModel: string;
   private maxFiles: number;
   private maxTotalFileSize: number;
+  private defaultTemperature: number;
 
   constructor() {
     // Read configuration from environment variables
@@ -24,6 +25,7 @@ class AIStudioMCPServer {
     this.defaultModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash'; // Default gemini-2.5-flash
     this.maxFiles = parseInt(process.env.GEMINI_MAX_FILES || '10'); // Default maximum 10 files
     this.maxTotalFileSize = parseInt(process.env.GEMINI_MAX_TOTAL_FILE_SIZE || '50') * 1024 * 1024; // Default 50MB
+    this.defaultTemperature = parseFloat(process.env.GEMINI_TEMPERATURE || '0.2'); // Default 0.2
 
     this.server = new Server(
       {
@@ -58,6 +60,7 @@ class AIStudioMCPServer {
       console.error(`- Default Model: ${this.defaultModel}`);
       console.error(`- Max Files: ${this.maxFiles}`);
       console.error(`- Max Total File Size: ${Math.round(this.maxTotalFileSize / 1024 / 1024)}MB`);
+      console.error(`- Default Temperature: ${this.defaultTemperature}`);
     } catch (error) {
       console.error('Failed to initialize Google GenAI:', error);
       process.exit(1);
@@ -113,6 +116,13 @@ class AIStudioMCPServer {
                   type: 'string',
                   description: 'Gemini model to use (optional)',
                   default: this.defaultModel,
+                },
+                temperature: {
+                  type: 'number',
+                  description: 'Temperature for generation (0-2, default 0.2)',
+                  default: this.defaultTemperature,
+                  minimum: 0,
+                  maximum: 2,
                 },
               },
               required: ['user_prompt'],
@@ -327,6 +337,7 @@ class AIStudioMCPServer {
       contents,
       config: {
         maxOutputTokens: this.maxOutputTokens,
+        temperature: args.temperature !== undefined ? args.temperature : this.defaultTemperature,
       },
     };
     

@@ -37,6 +37,7 @@ export GEMINI_API_KEY=your_api_key_here
 - `GEMINI_MAX_OUTPUT_TOKENS`: Maximum output tokens (default: 8192)
 - `GEMINI_MAX_FILES`: Maximum number of files per request (default: 10)
 - `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in MB (default: 50)
+- `GEMINI_TEMPERATURE`: Temperature for generation (0-2, default: 0.2)
 
 Example:
 ```bash
@@ -46,6 +47,7 @@ export GEMINI_TIMEOUT=600000  # 10 minutes
 export GEMINI_MAX_OUTPUT_TOKENS=16384  # More output tokens
 export GEMINI_MAX_FILES=5  # Limit to 5 files per request
 export GEMINI_MAX_TOTAL_FILE_SIZE=100  # 100MB limit
+export GEMINI_TEMPERATURE=0.7  # More creative responses
 ```
 
 ## Available Tools
@@ -63,6 +65,7 @@ Generates content using Gemini with comprehensive support for files, conversatio
   - `content` (string): Base64 encoded file content
   - `type` (string, optional): MIME type (auto-detected from file extension)
 - `model` (string, optional): Gemini model to use (default: gemini-2.5-flash)
+- `temperature` (number, optional): Temperature for generation (0-2, default: 0.2). Lower values produce more focused responses, higher values more creative ones
 
 **Supported file types (Gemini 2.5 models):**
 - **Images**: JPG, JPEG, PNG, GIF, WebP, SVG, BMP, TIFF
@@ -215,7 +218,8 @@ Add this server to your MCP client configuration:
         "GEMINI_TIMEOUT": "600000",
         "GEMINI_MAX_OUTPUT_TOKENS": "16384",
         "GEMINI_MAX_FILES": "10",
-        "GEMINI_MAX_TOTAL_FILE_SIZE": "50"
+        "GEMINI_MAX_TOTAL_FILE_SIZE": "50",
+        "GEMINI_TEMPERATURE": "0.2"
       }
     }
   }

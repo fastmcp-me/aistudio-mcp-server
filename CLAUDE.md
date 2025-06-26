@@ -46,6 +46,7 @@ Optional:
 - `GEMINI_MAX_OUTPUT_TOKENS`: Maximum tokens for output (default: 8192)
 - `GEMINI_MAX_FILES`: Maximum number of files per request (default: 10)
 - `GEMINI_MAX_TOTAL_FILE_SIZE`: Maximum total file size in MB (default: 50)
+- `GEMINI_TEMPERATURE`: Temperature for generation (0-2, default: 0.2)
 
 ## Key Implementation Details
 
@@ -53,6 +54,7 @@ Optional:
 - TypeScript strict mode is enabled - ensure all types are properly defined
 - File uploads are handled by reading files as base64 and sending to Gemini with appropriate MIME types
 - The `generate_content` tool accepts an optional `model` parameter to override the default model
+- The `generate_content` tool accepts an optional `temperature` parameter (0-2) to control response creativity
 - The main executable is at `bin/aistudio-mcp-server` which requires the compiled `dist/index.js`
 
 ## File Processing
