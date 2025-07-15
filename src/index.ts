@@ -73,7 +73,7 @@ class AIStudioMCPServer {
         tools: [
           {
             name: 'generate_content',
-            description: 'Generate content using Gemini with optional file inputs. Supports multiple files: images (JPG, PNG, GIF, WebP, SVG, BMP, TIFF), video (MP4, AVI, MOV, WebM, FLV, MPG, WMV), audio (MP3, WAV, AIFF, AAC, OGG, FLAC), documents (PDF), and text files (TXT, MD, JSON, XML, CSV, HTML). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "user_prompt": "Analyze this video",\n  "files": [\n    {\n      "path": "/path/to/video.mp4"\n    }\n  ]\n}\n```\n\nPDF to Markdown conversion:\n```json\n{\n  "user_prompt": "Convert this PDF to well-formatted Markdown, preserving structure and formatting",\n  "files": [\n    {"path": "/document.pdf"}\n  ]\n}\n```\n\nWith system prompt:\n```json\n{\n  "system_prompt": "You are a helpful assistant specialized in document analysis",\n  "user_prompt": "Please provide a detailed summary",\n  "files": [{"path": "/document.pdf"}]\n}\n```',
+            description: 'Generate content using Gemini with optional file inputs, code execution, and Google search. Supports multiple files: images (JPG, PNG, GIF, WebP, SVG, BMP, TIFF), video (MP4, AVI, MOV, WebM, FLV, MPG, WMV), audio (MP3, WAV, AIFF, AAC, OGG, FLAC), documents (PDF), and text files (TXT, MD, JSON, XML, CSV, HTML). MIME type is auto-detected from file extension.\n\nExample usage:\n```json\n{\n  "user_prompt": "Analyze this video",\n  "files": [\n    {\n      "path": "/path/to/video.mp4"\n    }\n  ]\n}\n```\n\nPDF to Markdown conversion:\n```json\n{\n  "user_prompt": "Convert this PDF to well-formatted Markdown, preserving structure and formatting",\n  "files": [\n    {"path": "/document.pdf"}\n  ]\n}\n```\n\nWith Google Search:\n```json\n{\n  "user_prompt": "What are the latest AI breakthroughs in 2024?",\n  "enable_google_search": true\n}\n```\n\nWith Code Execution:\n```json\n{\n  "user_prompt": "Write and run a Python script to calculate prime numbers up to 100",\n  "enable_code_execution": true\n}\n```\n\nCombining features with thinking mode:\n```json\n{\n  "user_prompt": "Research quantum computing and create a Python simulation",\n  "model": "gemini-2.5-pro",\n  "enable_google_search": true,\n  "enable_code_execution": true,\n  "thinking_budget": -1\n}\n```',
             inputSchema: {
               type: 'object',
               properties: {
@@ -123,6 +123,21 @@ class AIStudioMCPServer {
                   default: this.defaultTemperature,
                   minimum: 0,
                   maximum: 2,
+                },
+                enable_code_execution: {
+                  type: 'boolean',
+                  description: 'Enable code execution capability for the model',
+                  default: false,
+                },
+                enable_google_search: {
+                  type: 'boolean',
+                  description: 'Enable Google search capability for the model',
+                  default: false,
+                },
+                thinking_budget: {
+                  type: 'number',
+                  description: 'Thinking budget for models that support thinking mode (-1 for unlimited)',
+                  default: -1,
                 },
               },
               required: ['user_prompt'],
@@ -331,14 +346,37 @@ class AIStudioMCPServer {
       parts: currentMessageParts
     });
 
+    // Build tools array based on parameters
+    const tools: any[] = [];
+    if (args.enable_code_execution) {
+      tools.push({ codeExecution: {} });
+    }
+    if (args.enable_google_search) {
+      tools.push({ googleSearch: {} });
+    }
+
     // Prepare request configuration
+    const config: any = {
+      maxOutputTokens: this.maxOutputTokens,
+      temperature: args.temperature !== undefined ? args.temperature : this.defaultTemperature,
+    };
+
+    // Add tools to config if any are enabled
+    if (tools.length > 0) {
+      config.tools = tools;
+    }
+
+    // Add thinking config if thinking_budget is provided and not default
+    if (args.thinking_budget !== undefined && args.thinking_budget !== -1) {
+      config.thinkingConfig = {
+        thinkingBudget: args.thinking_budget
+      };
+    }
+
     const requestConfig: any = {
       model,
       contents,
-      config: {
-        maxOutputTokens: this.maxOutputTokens,
-        temperature: args.temperature !== undefined ? args.temperature : this.defaultTemperature,
-      },
+      config,
     };
     
     // Add system instruction if provided
@@ -349,15 +387,66 @@ class AIStudioMCPServer {
     }
 
     try {
-      const response = await this.genAI.models.generateContent(requestConfig);
+      // Use streaming API to handle all response types
+      const response = await this.genAI.models.generateContentStream(requestConfig);
+      
+      let fullText = '';
+      const codeBlocks: any[] = [];
+      const executionResults: any[] = [];
+
+      for await (const chunk of response) {
+        if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
+          continue;
+        }
+
+        for (const part of chunk.candidates[0].content.parts) {
+          if (part.text) {
+            fullText += part.text;
+          }
+          if (part.executableCode) {
+            codeBlocks.push(part.executableCode);
+          }
+          if (part.codeExecutionResult) {
+            executionResults.push(part.codeExecutionResult);
+          }
+        }
+      }
+
+      // Build response content
+      const responseContent: any[] = [];
+      
+      if (fullText) {
+        responseContent.push({
+          type: 'text',
+          text: fullText || 'No content generated',
+        });
+      }
+
+      // Add code blocks if present
+      if (codeBlocks.length > 0) {
+        responseContent.push({
+          type: 'text',
+          text: '\n\n**Executable Code:**\n' + codeBlocks.map((code, i) => 
+            `\`\`\`${code.language || ''}\n${code.code}\n\`\`\``
+          ).join('\n\n')
+        });
+      }
+
+      // Add execution results if present
+      if (executionResults.length > 0) {
+        responseContent.push({
+          type: 'text',
+          text: '\n\n**Execution Results:**\n' + executionResults.map((result, i) => 
+            `Result ${i + 1}:\n${result.output || result.error || 'No output'}`
+          ).join('\n\n')
+        });
+      }
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: response.text || 'No content generated',
-          },
-        ],
+        content: responseContent.length > 0 ? responseContent : [{
+          type: 'text',
+          text: 'No content generated'
+        }],
       };
     } catch (error) {
       throw new Error(`Gemini API error: ${error}`);
