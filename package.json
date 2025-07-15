@@ -1,6 +1,6 @@
 {
   "name": "aistudio-mcp-server",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "MCP Server for Google AI Studio / Gemini API integration with file processing support",
   "main": "dist/index.js",
   "bin": {

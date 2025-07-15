@@ -34,6 +34,8 @@ The server is implemented as a single TypeScript module (`src/index.ts`) that:
 2. Exposes one tool: `generate_content` (handles both general content generation and PDF-to-Markdown conversion)
 3. Uses Google's Generative AI SDK to process requests
 4. Handles file uploads and content generation through Gemini API
+5. Supports optional Code Execution and Google Search capabilities
+6. Uses streaming API to handle various response types including text, executable code, and execution results
 
 ## Environment Configuration
 
@@ -55,6 +57,9 @@ Optional:
 - File uploads are handled by reading files as base64 and sending to Gemini with appropriate MIME types
 - The `generate_content` tool accepts an optional `model` parameter to override the default model
 - The `generate_content` tool accepts an optional `temperature` parameter (0-2) to control response creativity
+- The `generate_content` tool accepts optional `enable_code_execution` and `enable_google_search` boolean parameters
+- The `generate_content` tool accepts an optional `thinking_budget` parameter for models that support thinking mode
+- Uses streaming API to handle text, executable code, and code execution results
 - The main executable is at `bin/aistudio-mcp-server` which requires the compiled `dist/index.js`
 
 ## File Processing
@@ -88,6 +93,32 @@ The `generate_content` tool uses a `files` array parameter for processing files:
       "type": "application/pdf"
     }
   ]
+}
+```
+
+**Using Google Search:**
+```javascript
+{
+  "user_prompt": "What are the latest developments in quantum computing?",
+  "enable_google_search": true
+}
+```
+
+**Using Code Execution:**
+```javascript
+{
+  "user_prompt": "Write and execute a Python script that calculates fibonacci numbers",
+  "enable_code_execution": true
+}
+```
+
+**Advanced Features with Thinking Mode:**
+```javascript
+{
+  "user_prompt": "Solve this complex mathematical problem with step-by-step reasoning",
+  "model": "gemini-2.5-pro",
+  "enable_code_execution": true,
+  "thinking_budget": -1  // Unlimited thinking
 }
 ```
 
