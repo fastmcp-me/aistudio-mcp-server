@@ -10,3 +10,4 @@ coverage/
 *.swp
 *.swo
 *~
+package-lock.json
